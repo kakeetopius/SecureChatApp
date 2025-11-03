@@ -337,19 +337,26 @@ class ChatFrame:
         if confirm:
             self.app.show_login()
 
-# ====================== RUN APP ======================
+# ====================== RUNN APP ======================
 if __name__ == "__main__":
     root = tk.Tk()
     app = SecureChatApp(root)
 
+    #a client object to communicate with server
     client = Client()
+
+    #a callback that client will use to send updates to gui using a queue
     client.on_message = lambda cmd, data=None: app.message_queue.put((cmd, data))
     app.client = client
 
+    #connecting to server
     client.dial_server()
 
+    #listen for updates from server through client object in another thread
     thread = threading.Thread(target=app.listen_for_updates,args=(client,), daemon=True)
     thread.start()
+
+    #running main gui
     root.mainloop()
 
 

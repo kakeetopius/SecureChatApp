@@ -3,7 +3,6 @@ import json
 import time 
 import struct
 import select
-import threading
 from base64 import b64encode,b64decode
 
 import Crypto
@@ -72,14 +71,19 @@ class Client():
         while True:
             if len(buf) < 4:
                 break       #not enough to read header
+
+            #get length
             msg_len = struct.unpack(">I", buf[:4])[0]
             
             if len(buf) < 4 + msg_len:
                 break #full message not yet received
 
+            #get message from buffer
             msg_data = buf[4: 4+msg_len]
+            #remove message from buffer
             buf = buf[4+msg_len:]
             self.process_message(msg_data)
+        #if bufffer is changed update
         buffers[sock] = buf
 
     def process_message(self, msg_bytes) -> int:
@@ -338,29 +342,4 @@ class Client_Peer():
 
     def set_publickey(self, public_key):
         self.public_key = public_key
-
-
-if __name__ == "__main__":
-    client = Client()
-    client.username = "tom"
-    client.password = "kaps"
-
-    client.dial_server()
-    
-    try:
-        i = 0
-        sent_signup = False
-        sent_message = False
-
-        while True:
-            client.poll_server()
-
-            if not sent_signup:
-                client.send_signup_request()
-                sent_signup = True
-
-            
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        print("\nClient Stopped..")
 

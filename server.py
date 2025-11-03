@@ -105,9 +105,9 @@ class Server():
                 case "login" | "signup":
                     self.authenticate_user(client_conn, command, msg)
                 case "send_message":
-                    self.send_client_message(msg, client_conn)
+                    self.send_client_message(msg)
                 case "exchange_session_key":
-                    self.exchange_session_key(msg, client_conn)
+                    self.exchange_session_key(msg)
                 case _:
                     print(f"Got unknown command: {command}")
 
@@ -158,7 +158,7 @@ class Server():
 
         db.close()
 
-    def exchange_session_key(self, data: dict, client_conn: socket.socket):
+    def exchange_session_key(self, data: dict):
         receiver = data["peername"]
         sender = data["username"]
 
@@ -173,7 +173,7 @@ class Server():
                 self.send_to_client(client.connection, message)
                 break
 
-    def send_client_message(self, data: dict, client_conn: socket.socket):
+    def send_client_message(self, data: dict):
         receiver = data["peername"]
         sender = data["username"]
 
