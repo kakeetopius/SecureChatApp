@@ -23,9 +23,23 @@ class Client():
         self.public_key : RSA.RsaKey =  None
         self.peers: list[Client_Peer] = []
 
+        self.server_public_key = self.import_server_pubkey("server_pubkey.pem")
+
+        if not self.server_public_key:
+            print("Could not get server public key")
         self.on_message = on_message #callback for GUI
 
         self.gen_keypair()
+
+    def import_server_pubkey(self, pub_key_path):
+        pub_key = None
+
+        if pub_key_path:
+            with open(pub_key_path, "rb") as f:
+                pub_key_data = f.read()
+                pub_key = RSA.import_key(pub_key_data)
+
+        return pub_key
 
     def dial_server(self):
         try:
@@ -202,10 +216,20 @@ class Client():
         #export key as PEM
         public_key_pem = self.public_key.export_key().decode("utf-8")
 
+        #encrypt username and password
+        #cipher object using public key
+        cipher_rsa = PKCS1_OAEP.new(self.server_public_key)
+        enc_username = cipher_rsa.encrypt(self.username.encode("utf-8"))
+        enc_password = cipher_rsa.encrypt(self.password.encode("utf-8"))
+
+        #convert username and passsword to base64 for proper transmission
+        b64_enc_username = b64encode(enc_username).decode("utf-8")
+        b64_enc_password = b64encode(enc_password).decode("utf-8")
+
         data = {
             "command": "login",
-            "username": self.username,
-            "password": self.password,
+            "username": b64_enc_username,
+            "password": b64_enc_password,
             "public_key": public_key_pem
         }
 
@@ -215,10 +239,20 @@ class Client():
         #export key as PEM
         public_key_pem = self.public_key.export_key().decode("utf-8")
 
+        #encrypt username and password
+        #cipher object using public key
+        cipher_rsa = PKCS1_OAEP.new(self.server_public_key)
+        enc_username = cipher_rsa.encrypt(self.username.encode("utf-8"))
+        enc_password = cipher_rsa.encrypt(self.password.encode("utf-8"))
+
+        #convert username and passsword to base64 for proper transmission
+        b64_enc_username = b64encode(enc_username).decode("utf-8")
+        b64_enc_password = b64encode(enc_password).decode("utf-8")
+
         data = {
             "command": "signup",
-            "username": self.username,
-            "password": self.password,
+            "username": b64_enc_username,
+            "password": b64_enc_password,
             "public_key": public_key_pem
         }
 

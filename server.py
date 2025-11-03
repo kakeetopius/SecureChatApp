@@ -5,7 +5,12 @@ import struct
 import sqlite3 
 import bcrypt
 import traceback
+from base64 import b64encode,b64decode
 
+
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Util.Padding import pad,unpad
 
 class Server():
     def __init__(self):
@@ -14,6 +19,12 @@ class Server():
         self.listening_address = "localhost"
         self.active_clients: list[Active_Client] = []
         self.client_buffers = {}
+        self.private_key, self.public_key = self.import_rsa_keys("server_privkey.pem", "server_pubkey.pem")
+
+        if self.private_key is None:
+            print("Could not get private key")
+        if self.public_key is None:
+            print("Could not get public key")
 
     def start_server(self):
         try:
@@ -70,6 +81,22 @@ class Server():
             self.server_sock.close()
 
 
+    def import_rsa_keys(self, private_key_path, public_key_path):
+        private_key = None
+        public_key = None
+
+        if private_key_path:
+            with open(private_key_path, "rb") as f:
+                private_key_data = f.read()
+                private_key = RSA.import_key(private_key_data)
+
+        if public_key_path:
+            with open(public_key_path, "rb") as f:
+                public_key_data = f.read()
+                public_key = RSA.import_key(public_key_data)
+
+        return private_key, public_key
+
     def process_client_data(self, sock):
         print("Processing some client data")
         buff = self.client_buffers[sock]
@@ -121,9 +148,19 @@ class Server():
             "command": "auth_denied"
         }
         
+        pubkey = data["public_key"]
+        #username and password encrypted and in base64
         uname = data["username"]
         passwd = data["password"]
-        pubkey = data["public_key"]
+
+        # convert from bas64
+        enc_uname = b64decode(uname)
+        enc_passwd = b64decode(passwd)
+
+        #decrypt username and password
+        cipher_rsa = PKCS1_OAEP.new(self.private_key)
+        uname = cipher_rsa.decrypt(enc_uname).decode()
+        passwd = cipher_rsa.decrypt(enc_passwd).decode()
 
         #get all other active users and public keys to send to client
         active_users = []
