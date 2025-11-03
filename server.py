@@ -170,7 +170,7 @@ class Server():
                     "session_key": data["session_key"]
                 }
 
-                self.send_to_client(client_conn, message)
+                self.send_to_client(client.connection, message)
                 break
 
     def send_client_message(self, data: dict, client_conn: socket.socket):
@@ -186,7 +186,7 @@ class Server():
                     "iv"    : data["iv"]
                 }
 
-                self.send_to_client(client_conn, message)
+                self.send_to_client(client.connection, message)
                 break
 
     def remove_active_client(self, client_conn: socket.socket):

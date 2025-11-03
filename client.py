@@ -129,24 +129,27 @@ class Client():
         message = message.encode("utf-8")
 
         #first look up session key
-        session_key = None
+        session_key_b64 = None
         for peer in self.peers:
             if peer.name == peer_username:
-                session_key = peer.session_key
-                if not session_key:
+                session_key_b64 = peer.session_key
+                if not session_key_b64:
                     # if no session key yet first generate and send it
                     self.send_session_key(peer)
-                    # wait for five seconds
-                    time.sleep(5)
-                    session_key = peer.session_key
+                    # wait for 2 seconds
+                    time.sleep(2)
+                    session_key_b64 = peer.session_key
                 break 
 
-        if session_key is None:
+        if session_key_b64 is None:
             print(f"No peer: {peer_username}")
             return 
 
+        #converrt bas64 session key back to bytes
+        session_key_bytes = b64decode(session_key_b64)
+
         #encrypting message using session_key
-        cipher_aes = AES.new(session_key, AES.MODE_CBC)
+        cipher_aes = AES.new(session_key_bytes, AES.MODE_CBC)
 
         encrypted_message_bytes = cipher_aes.encrypt(pad(message, AES.block_size)) 
 
@@ -219,6 +222,7 @@ class Client():
 
     def handle_auth_response(self, command, data: dict):
         if command == "auth_denied":
+            self.send_to_gui("show_auth_error", None)
             return False
         
         #getting peers if any
@@ -227,6 +231,7 @@ class Client():
             #extract pub key from pem format
             peer_pub_key = RSA.import_key(peer_pub_key.encode("utf-8"))
             self.peers.append(Client_Peer(peer["username"], peer_pub_key))
+            self.send_to_gui("add_active_user", peer["username"])
 
 
         self.send_to_gui("show_chat", None)
@@ -239,6 +244,7 @@ class Client():
         peer_pub_key = RSA.import_key(peer_pub_key.encode("utf-8"))
 
         self.peers.append(Client_Peer(data["peername"], peer_pub_key))
+        self.send_to_gui("add_active_user", data["peername"])
 
     def remove_peer(self, data:dict):
         name = data["peername"]
@@ -248,6 +254,8 @@ class Client():
                 self.peers.remove(peer)
                 print(f"Peer: {name} is removed")
                 break
+        
+        self.send_to_gui("remove_active_user", data["peername"])
 
     def receive_message(self, data:dict):
         iv = data["iv"]
@@ -270,14 +278,20 @@ class Client():
             print(f"Could not get session_key for {peer_name}")
             return
 
+        #convert base64 session key back to bytes
+        session_key_bytes = b64decode(session_key)
+
         #decrypting data using session_key
-        cipher_aes = AES.new(key=session_key, mode=AES.MODE_CBC, iv=iv)
+        cipher_aes = AES.new(key=session_key_bytes, mode=AES.MODE_CBC, iv=iv)
 
         padded_decrypted_message = cipher_aes.decrypt(encrypted_message)
         #remove padding added
         decrypted_message = unpad(padded_decrypted_message, AES.block_size)
 
         print(f"Message from {peer_name}: {decrypted_message}")
+
+        self.send_to_gui("display_message", (peer_name, decrypted_message.decode("utf-8")))
+
 
     def receive_session_key(self, data:dict) -> bool:
         peer_name = data["peername"]
@@ -288,9 +302,8 @@ class Client():
                 #Decrypt session_key with private_key
                 cipher_rsa = PKCS1_OAEP.new(self.private_key)
 
-                session_key = b64decode(session_key)
-
-                decrypted_session_key = cipher_rsa.decrypt(session_key)
+                encrypted_session_key = b64decode(session_key)
+                decrypted_session_key = cipher_rsa.decrypt(encrypted_session_key)
     
                 peer.session_key = b64encode(decrypted_session_key).decode("utf-8")
                 

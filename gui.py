@@ -21,14 +21,14 @@ class SecureChatApp:
         self.message_queue = queue.Queue()
 
         # Initialize all frames
-        self.login_frame = LoginFrame(self)
-        self.signup_frame = SignupFrame(self)
-        self.chat_frame = ChatFrame(self)
+        self.login_frame: LoginFrame = LoginFrame(self)
+        self.signup_frame: SignupFrame = SignupFrame(self)
+        self.chat_frame: ChatFrame = ChatFrame(self)
 
         # Start with login
         self.show_login()
 
-        #start processing queue
+        #start processing queue for info from server
         self.process_queue()
 
     def process_queue(self):
@@ -82,14 +82,22 @@ class SecureChatApp:
                     self.root.after(0, lambda: self.login("TestUser"))
                 except Exception as e:
                     print(f"Error in after: {e}")
+            case "show_auth_error":
+                self.root.after(0, lambda: messagebox.showerror("Invalid Login", "Invalid User name or password"))
+            case "add_active_user":
+                self.root.after(0, lambda: self.chat_frame.add_active_user(data))
+            case "remove_active_user":
+                self.root.after(0, lambda: self.chat_frame.remove_active_user(data))
+            case "display_message":
+                self.root.after(0, lambda: self.chat_frame.display_message(data[0], data[1]))
             case _:
                 return
-        #TODO TODO TODO
+        #TODO TODO TODO i need more commands here
 
 # ====================== LOGIN PAGE ======================
 class LoginFrame:
     def __init__(self, app):
-        self.app = app
+        self.app: SecureChatApp= app
         self.frame = tk.Frame(app.root, bg="#1e1e1e")
 
         tk.Label(self.frame, text="Secure Chat Login", bg="#1e1e1e", fg="white",
@@ -130,11 +138,11 @@ class LoginFrame:
         if not username or not password:
             messagebox.showerror("Error", "Please enter both username and password.")
             return
+        
+        self.app.client.username = username
+        self.app.client.password = password
 
-        if username == "admin" and password == "1234":
-            self.app.login(username)
-        else:
-            messagebox.showerror("Error", "Invalid username or password.")
+        self.app.client.send_login_request()
 
 
 # ====================== SIGNUP PAGE ======================
@@ -198,8 +206,12 @@ class SignupFrame:
 # ====================== CHAT PAGE ======================
 class ChatFrame:
     def __init__(self, app):
-        self.app = app
+        self.app: SecureChatApp = app
         self.frame = tk.Frame(app.root, bg="#1e1e1e")
+        
+        #store current selected user and chat history
+        self.current_user = None
+        self.chat_histories = {} # {username: {list_of_messages}}
 
         # LEFT FRAME - users
         self.left_frame = tk.Frame(self.frame, width=200, bg="#2c2c2c")
@@ -212,8 +224,9 @@ class ChatFrame:
                                        selectbackground="#5c5c5c")
 
         self.user_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        for user in ["Alice", "Bob", "Charlie"]:
-            self.user_listbox.insert(tk.END, user)
+
+        #add click event binding
+        self.user_listbox.bind('<<ListboxSelect>>', self.on_user_select)
 
         # RIGHT FRAME - chat + input
         self.right_frame = tk.Frame(self.frame, bg="#1e1e1e")
@@ -243,18 +256,81 @@ class ChatFrame:
                                   relief="flat", command=self.logout)
         logout_button.pack(pady=10)
 
-    def display_message(self, message):
+    def on_user_select(self, event):
+        """Handle user selection from the listbox"""
+        selection = self.user_listbox.curselection()
+        if selection:
+            index = selection[0]
+            selected_user = self.user_listbox.get(index)
+
+            #only update if different user
+            if selected_user != self.current_user:
+                self.current_user = selected_user
+                self.update_chat_display()
+
+    def add_active_user(self, name):
+        self.user_listbox.insert(tk.END, name)
+        #Initialize empty chat history
+        self.chat_histories[name] = []
+
+    def remove_active_user(self, name):
+        #find user in listbox
+        user_list = self.user_listbox.get(0, tk.END)
+
+        for index, username in enumerate(user_list):
+            if username == name:
+                #remove from listbox
+                self.user_listbox.delete(index)
+
+                #remove from chat_histories
+                if name in self.chat_histories:
+                    del self.chat_histories[name]
+
+            
+        
+    def update_chat_display(self):
         self.chat_area.config(state='normal')
-        self.chat_area.insert(tk.END, message + "\n\n", "left")
+        self.chat_area.delete(1.0, tk.END)
+
+        if self.current_user and self.current_user in self.chat_histories:
+            for message in self.chat_histories[self.current_user]:
+                text, alignment = message
+                if alignment == "right":
+                    self.chat_area.insert(tk.END, f"{text}\n\n", "right")
+                else:
+                    self.chat_area.insert(tk.END, f"{text}\n\n", "left")
         self.chat_area.config(state='disabled')
         self.chat_area.yview(tk.END)
 
+    def display_message(self, sender, message):
+        if sender not in self.chat_histories:
+            self.chat_histories[sender] = []
+
+        self.chat_histories[sender].append((message, "left"))
+
+        #if this sender is currently selected, update the display
+        if self.current_user == sender:
+            self.update_chat_display()
+
     def send_message(self, event=None):
         msg = self.msg_entry.get().strip()
-        if not msg:
+        if not msg or not self.current_user:
             return
-        self.display_message(f"You: {msg}")
+
+        #add message to current user chat history
+        if self.current_user not in self.chat_histories:
+            self.chat_histories[self.current_user] = []
+
+        self.chat_histories[self.current_user].append((msg, "right"))
+
+        #Update display
+        self.update_chat_display()
+
+        #clear input and send via client
         self.msg_entry.delete(0, tk.END)
+
+        if self.app.client:
+            self.app.client.send_encrypted_message(self.current_user, msg)
 
     def logout(self):
         confirm = messagebox.askyesno("Logout", "Are you sure you want to log out?")
