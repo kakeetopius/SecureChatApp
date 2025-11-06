@@ -6,7 +6,7 @@
 - [System Architecture](#3-system-architecture)  
 - [Installation Guide](#4-installation-guide)  
 - [Usage Instructions](#5-usage-instructions)
-- [GUI Framework](#5-gui-framework)
+- [GUI Framework](#6-gui-framework)
 - [Protocol Implementation](#7-protocol-implementation)
 
 ## 1. Overview
