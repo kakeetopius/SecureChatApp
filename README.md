@@ -56,35 +56,36 @@ ___
 
 ### 3.2 Encryption Flow
 #### 1. Initialization Phase  
-    Clients generate RSA-2048 key pairs upon startup  
-    Server maintains persistent RSA key pair for secure handshakes  
+Clients generate RSA-2048 key pairs upon startup   
+Server maintains persistent RSA key pair for secure handshakes  
 
  #### 2. Authentication Phase  
-    Client sends user credentials encrypted with server's public RSA key to server  
+Client sends user credentials encrypted with server's public RSA key to server  
  
  #### 3. Key Exchange Phase  
-    Clients generate unique AES-256 session keys for each peer  
-    Session keys exchanged via RSA-encrypted channels before first message is sent  
+Clients generate unique AES-256 session keys for each peer  
+Session keys exchanged via RSA-encrypted channels before first message is sent  
 
  #### 4. Message Exchange Phase   
-    Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
-    Receiver client verifies HMAC and decrypts message with already established session key.  
-    This ensures both integrity and confidentiality.  
+Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
+Receiver client verifies HMAC and decrypts message with already established session key.  
+This ensures both integrity and confidentiality.  
 
 ___
 ## 4. Installation Guide
    
 ### 4.1 Prerequisites
-System Requirements  
-  Python Version: 3.7 or higher  
-  Operating System: Windows, macOS, or Linux  
-  Disk Space: Minimum 50 MB available space  
-  Memory: Minimum 512 MB RAM  
+#### System Requirements  
+  Python Version:  3.7 or higher  
+  Operating System:  Windows, macOS, or Linux  
+  Disk Space:  About 30 MB available space  
+  Memory:  Minimum 512 MB RAM  
 
 Required Python Packages
 ```bash
 pip install pycryptodome bcrypt
 ```
+
 
 ### 4.2 Installation Steps
 1. Step 1: Repository Setup
@@ -94,17 +95,17 @@ cd SecureChat
 ```
 
 2. Step 2: Cryptographic Key Generation     
-- Generate server private key (2048-bit RSA)
+Generate server private key (2048-bit RSA)
 ```bash
   openssl genrsa -out server_privkey.pem 2048
 ```
     
-- Extract server public key
+Extract server public key
 ```bash
 openssl rsa -in server_privkey.pem -pubout -out server_pubkey.pem
 ```
 
-- Step 3: Database Initialization
+3. Database Initialization  
 The SQLite database (securechat.db) is automatically initialized with the required schema upon first server execution.
 
 ___
@@ -128,14 +129,14 @@ Starting Client Application
 Tkinter Interface: Main window and component management  
 Frame Classes:  
 
-  1.LoginFrame: Authentication interface  
-  2.SignupFrame: User registration interface  
-  3.ChatFrame: Main messaging interface  
+  1. LoginFrame: Authentication interface  
+  2. SignupFrame: User registration interface  
+  3. ChatFrame: Main messaging interface  
 
 Network Communication  
-  1.Queue System: Thread-safe message processing  
-  2.Event Handling: Real-time UI updates from network events  
-  3.Encryption Management: RSA and AES cryptographic operations  
+  1. Queue System: Thread-safe message processing  
+  2. Event Handling: Real-time UI updates from network events  
+  3. Encryption Management: RSA and AES cryptographic operations  
 
 --- 
 ## 7. Security Protocol
@@ -168,15 +169,26 @@ Network Communication
   3. Encrypted payload transmitted via server
   4. Recipient decrypts using session key and verifies integrity
 
-### 7.3 Network Security
-#### Message Framing
+### 7.3 Message Format
   1. Length Prefix: 4-byte big-endian message length header
-  2. JSON Payload: Structured data format for all communications
-  3. Error Handling: Robust connection and parsing error management
+  2. JSON Payload: Structured data format for all communications with a *command* field specifying what operation is being carried out.  
+     For example, to send a message the payload would look something like this.
+     ```json
+        {
+            "command": "send_message",
+            "username": "pius",
+            "peername": "victor",
+            "message": "b64_encrypted_messag"e,
+            "iv": "b64_iv",
+            "mac": "b64_mac_bytes"
+        }
 
-Disclaimer
-This software is provided for educational purposes. Users are responsible for ensuring compliance with local laws and regulations when deploying secure communication systems. The authors assume no liability for damages resulting from the use or misuse of this application.
+     ```
 
-Document Version: 1.0
-Last Updated: 11/6/2025
-Compatible With: Application Version 1.0
+> [!NOTE]
+>Disclaimer
+>This software is provided for educational purposes. Users are responsible for ensuring compliance with local laws and regulations when deploying secure communication systems. The authors assume no liability for damages resulting from the use or misuse of this application.
+>
+>Document Version: 1.0
+>Last Updated: 11/6/2025
+>Compatible With: Application Version 1.0
