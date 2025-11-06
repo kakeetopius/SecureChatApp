@@ -88,24 +88,26 @@ pip install pycryptodome bcrypt
 
 
 ### 4.2 Installation Steps
-1. Step 1: Repository Setup
+#### 1. Repository Setup
+
 ```bash
 git clone https://github.com/kakeetopius/SecureChatApp.git
 cd SecureChat
 ```
 
-2. Step 2: Cryptographic Key Generation     
-Generate server private key (2048-bit RSA)
+#### 2. Cryptographic Key Generation  
+
+##### Generate server private key (2048-bit RSA)
 ```bash
   openssl genrsa -out server_privkey.pem 2048
 ```
     
-Extract server public key
+##### Extract server public key
 ```bash
 openssl rsa -in server_privkey.pem -pubout -out server_pubkey.pem
 ```
 
-3. Database Initialization  
+####  3. Database Initialization  
 The SQLite database (securechat.db) is automatically initialized with the required schema upon first server execution.
 
 ___
@@ -178,7 +180,7 @@ Network Communication
             "command": "send_message",
             "username": "pius",
             "peername": "victor",
-            "message": "b64_encrypted_messag"e,
+            "message": "b64_encrypted_message",
             "iv": "b64_iv",
             "mac": "b64_mac_bytes"
         }
