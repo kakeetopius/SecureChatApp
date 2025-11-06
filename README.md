@@ -50,26 +50,13 @@ ___
  - Active Client Tracking: Maintains real-time user presence information
 
 #### Client Component
- - Graphical User Interface: Tkinter-based desktop application
- - Cryptographic Operations: Handles encryption and decryption processes
- - Server Communication: Manages network connectivity and message exchange
+ - Starts a Graphical User Interface: Tkinter-based desktop application
+ - Connects to server and authenticate.
+ - Listens for updates from the server in a different thread.
+ - Send updates from listening thread to a queue.
+ - Main thread processes queue and updates gui
 
-### 3.2 Encryption Flow
-#### 1. Initialization Phase  
-* Clients generate RSA-2048 key pairs upon startup   
-* Server maintains persistent RSA key pair for secure handshakes  
-
- #### 2. Authentication Phase  
-* Client sends user credentials encrypted with server's public RSA key to server  
- 
- #### 3. Key Exchange Phase  
-* Clients generate unique AES-256 session keys for each peer  
-* Session keys exchanged via RSA-encrypted channels before first message is sent  
-
- #### 4. Message Exchange Phase   
-* Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
-*  Receiver client verifies HMAC and decrypts message with already established session key.  
-* This ensures both integrity and confidentiality.  
+ ![Client Architecture](resources/client_arch.png)
 
 ___
 ## 4. Installation Guide
