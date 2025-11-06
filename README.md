@@ -158,6 +158,8 @@ Network Communication
   3. Encrypted payload transmitted via server
   4. Recipient decrypts using session key and verifies integrity
 
+![Message Flow](resources/message_flow.png)
+
 ### 7.3 Message Format
   1. Length Prefix: 4-byte big-endian message length header
   2. JSON Payload: Structured data format for all communications with a *command* field specifying what operation is being carried out.  
