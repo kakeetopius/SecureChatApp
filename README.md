@@ -56,20 +56,20 @@ ___
 
 ### 3.2 Encryption Flow
 #### 1. Initialization Phase  
-Clients generate RSA-2048 key pairs upon startup   
-Server maintains persistent RSA key pair for secure handshakes  
+  Clients generate RSA-2048 key pairs upon startup   
+  Server maintains persistent RSA key pair for secure handshakes  
 
  #### 2. Authentication Phase  
-Client sends user credentials encrypted with server's public RSA key to server  
+  Client sends user credentials encrypted with server's public RSA key to server  
  
  #### 3. Key Exchange Phase  
-Clients generate unique AES-256 session keys for each peer  
-Session keys exchanged via RSA-encrypted channels before first message is sent  
+  Clients generate unique AES-256 session keys for each peer  
+  Session keys exchanged via RSA-encrypted channels before first message is sent  
 
  #### 4. Message Exchange Phase   
-Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
-Receiver client verifies HMAC and decrypts message with already established session key.  
-This ensures both integrity and confidentiality.  
+  Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
+  Receiver client verifies HMAC and decrypts message with already established session key.  
+  This ensures both integrity and confidentiality.  
 
 ___
 ## 4. Installation Guide
