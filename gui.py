@@ -93,7 +93,6 @@ class SecureChatApp:
                 self.root.after(0, lambda: self.chat_frame.display_message(data[0], data[1]))
             case _:
                 return
-        #TODO TODO TODO i need more commands here
 
 # ====================== LOGIN PAGE ======================
 class LoginFrame:
