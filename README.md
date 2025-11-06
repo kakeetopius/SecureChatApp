@@ -1,12 +1,13 @@
 # Secure Chat Application Documentation
 
 ## Table of Contents
-1.Overview
-2.Features  
-3.System Architecture
-4.Installation Guide
-5.Usage Instructions
-6.Security Protocol
+1. Overview  
+2. Features  
+3. System Architecture  
+4. Installation Guide  
+5. Usage Instructions  
+6. GUI Framework
+7. Security Protocol  
 
 ## 1. Overview
 The Secure Chat Application is a real-time messaging platform that implements end-to-end encryption using standard cryptographic protocols. Built with Python and Tkinter, this application provides secure communication channels between users. 
@@ -20,55 +21,55 @@ The Secure Chat Application is a real-time messaging platform that implements en
 ---
 ## 2. Features
    
-> #### Security Features
-> - RSA Public Key Encryption (2048-bit): Secures credential transmission and key exchange processes
-> - AES-256 Session Keys: Provides efficient symmetric encryption for message content
-> - Bcrypt Password Hashing: Implements secure password storage with salt
-> - End-to-End Encryption: Guarantees only intended recipients can decrypt and read messages
-> - Message Authentication Codes (MAC): Ensures message integrity and authenticity
+ #### Security Features
+ - RSA Public Key Encryption (2048-bit): Secures credential transmission and key exchange processes
+ - AES-256 Session Keys: Provides efficient symmetric encryption for message content
+ - Bcrypt Password Hashing: Implements secure password storage with salt
+ - End-to-End Encryption: Guarantees only intended recipients can decrypt and read messages
+ - Message Authentication Codes (MAC): Ensures message integrity and authenticity
 
-> #### Chat Functionality
-> - Real-time Messaging: Instant delivery of encrypted messages between users
-> - User Authentication System: Secure login and registration processes
-> - Dynamic User Presence: Real-time online/offline status updates
+ #### Chat Functionality
+ - Real-time Messaging: Instant delivery of encrypted messages between users
+ - User Authentication System: Secure login and registration processes
+ - Dynamic User Presence: Real-time online/offline status updates
 
-> #### Technical Capabilities
-> - SQLite Database Integration: Efficient user management and data persistence
-> - Non-blocking Socket Communication: Optimized network performance
-> - JSON-based Message Protocol: Structured and extensible data exchange format
-> - Modular Code Design: Maintainable and extensible codebase structure
+ #### Technical Capabilities
+ - SQLite Database Integration: Efficient user management and data persistence
+ - Non-blocking Socket Communication: Optimized network performance
+ - JSON-based Message Protocol: Structured and extensible data exchange format
+ - Modular Code Design: Maintainable and extensible codebase structure
 
 ___
 ## 3. System Architecture
    
 ### 3.1 Client-Server Model
 #### Server Component
-> - Connection Management: Handles multiple simultaneous client connections
-> - Message Routing: Directs encrypted messages to appropriate recipients
-> - User Authentication: Validates credentials and manages sessions
-> - Active Client Tracking: Maintains real-time user presence information
+ - Connection Management: Handles multiple simultaneous client connections
+ - Message Routing: Directs encrypted messages to appropriate recipients
+ - User Authentication: Validates credentials and manages sessions
+ - Active Client Tracking: Maintains real-time user presence information
 
 #### Client Component
-> - Graphical User Interface: Tkinter-based desktop application
-> - Cryptographic Operations: Handles encryption and decryption processes
-> - Server Communication: Manages network connectivity and message exchange
+ - Graphical User Interface: Tkinter-based desktop application
+ - Cryptographic Operations: Handles encryption and decryption processes
+ - Server Communication: Manages network connectivity and message exchange
 
 ### 3.2 Encryption Flow
-> 1. Initialization Phase  
->   Clients generate RSA-2048 key pairs upon startup  
->   Server maintains persistent RSA key pair for secure handshakes  
+#### 1. Initialization Phase  
+    Clients generate RSA-2048 key pairs upon startup  
+    Server maintains persistent RSA key pair for secure handshakes  
 
-> 2. Authentication Phase  
->    Client sends user credentials encrypted with server's public RSA key to server  
-  
-> 3. Key Exchange Phase  
->   Clients generate unique AES-256 session keys for each peer  
->   Session keys exchanged via RSA-encrypted channels before first message is sent  
+ #### 2. Authentication Phase  
+    Client sends user credentials encrypted with server's public RSA key to server  
+ 
+ #### 3. Key Exchange Phase  
+    Clients generate unique AES-256 session keys for each peer  
+    Session keys exchanged via RSA-encrypted channels before first message is sent  
 
-> 4. Message Exchange Phase   
->    Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
->    Receiver client verifies HMAC and decrypts message with already established session key.  
->    This ensures both integrity and confidentiality.  
+ #### 4. Message Exchange Phase   
+    Sender client encrypts message and includes a Message Authentication Code(HMAC) for the encrypted message.     
+    Receiver client verifies HMAC and decrypts message with already established session key.  
+    This ensures both integrity and confidentiality.  
 
 ___
 ## 4. Installation Guide
