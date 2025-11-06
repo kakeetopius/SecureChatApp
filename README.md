@@ -129,7 +129,7 @@ Starting Client Application
   3. System hashes password with bcrypt and salt  
   4. New user record created in database  
 
-### 6.2 Message Encryption Protocol
+### 6.2 Message Encryption and Exchange Protocol
 
 #### Session Establishment
   1. Client generates AES-256 session key for each peer
