@@ -1,13 +1,13 @@
 # Secure Chat Application Documentation
 
 ## Table of Contents
-1. Overview  
-2. Features  
-3. System Architecture  
-4. Installation Guide  
-5. Usage Instructions  
-6. GUI Framework
-7. Security Protocol  
+1. [Overview](#overview)  
+2. [Features](#features)  
+3. [System Architecture](#system-architecture)  
+4. [Installation Guide](#installation-guide)  
+5. [Usage Instructions](#usage-instructions)
+6. [GUI Framework](#gui-framework)
+7. [Protocol Implementation](#protocol-implementation)
 
 ## 1. Overview
 The Secure Chat Application is a real-time messaging platform that implements end-to-end encryption using standard cryptographic protocols. Built with Python and Tkinter, this application provides secure communication channels between users. 
@@ -141,7 +141,7 @@ Network Communication
   3. Encryption Management: RSA and AES cryptographic operations  
 
 --- 
-## 7. Security Protocol
+## 7. Protocol Implementation
    
 ### 7.1 Authentication Protocol
 
