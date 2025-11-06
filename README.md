@@ -6,8 +6,7 @@
 - [System Architecture](#3-system-architecture)  
 - [Installation Guide](#4-installation-guide)  
 - [Usage Instructions](#5-usage-instructions)
-- [GUI Framework](#6-gui-framework)
-- [Protocol Implementation](#7-protocol-implementation)
+- [Protocol Implementation](#6-protocol-implementation)
 
 ## 1. Overview
 The Secure Chat Application is a real-time messaging platform that implements end-to-end encryption using standard cryptographic protocols. Built with Python and Tkinter, this application provides secure communication channels between users. 
@@ -113,24 +112,10 @@ Starting Client Application
   python gui.py
 ```
   
----
-## 6. GUI Framework
-Tkinter Interface: Main window and component management  
-Frame Classes:  
-
-  1. LoginFrame: Authentication interface  
-  2. SignupFrame: User registration interface  
-  3. ChatFrame: Main messaging interface  
-
-Network Communication  
-  1. Queue System: Thread-safe message processing  
-  2. Event Handling: Real-time UI updates from network events  
-  3. Encryption Management: RSA and AES cryptographic operations  
-
 --- 
-## 7. Protocol Implementation
+## 6. Protocol Implementation
    
-### 7.1 Authentication Protocol
+### 6.1 Authentication Protocol
 
 #### Login Process
   1. Client encrypts username/password with server's public RSA key and submits together with their public key.  
@@ -144,7 +129,7 @@ Network Communication
   3. System hashes password with bcrypt and salt  
   4. New user record created in database  
 
-### 7.2 Message Encryption Protocol
+### 6.2 Message Encryption Protocol
 
 #### Session Establishment
   1. Client generates AES-256 session key for each peer
@@ -162,7 +147,7 @@ Network Communication
 >**For a visual of the message flow [Click here](resources/message_flow.png)**
 
 
-### 7.3 Message Format
+### 6.3 Message Format
   1. Length Prefix: 4-byte big-endian message length header
   2. JSON Payload: Structured data format for all communications with a *command* field specifying what operation is being carried out.  
      For example, to send a message the payload would look something like this.
@@ -185,3 +170,4 @@ Network Communication
 >Document Version: 1.0
 >Last Updated: 11/6/2025
 >Compatible With: Application Version 1.0
+
