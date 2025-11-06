@@ -1,7 +1,9 @@
 Secure Chat Application Documentation
 
 Table of Contents
+
 1.Overview
+
 2.Features
 3.System Architecture
 4.Installation Guide
