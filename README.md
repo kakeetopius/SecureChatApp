@@ -158,7 +158,9 @@ Network Communication
   3. Encrypted payload transmitted via server
   4. Recipient decrypts using session key and verifies integrity
 
-![Message Flow](resources/message_flow.png)
+>[!NOTE]
+>**For a visual of the message flow [Click here](resources/message_flow.png)**
+
 
 ### 7.3 Message Format
   1. Length Prefix: 4-byte big-endian message length header
