@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 import queue
+import argparse
+import sys
 
 import time
 import threading
@@ -349,8 +351,24 @@ if __name__ == "__main__":
     client.on_message = lambda cmd, data=None: app.message_queue.put((cmd, data))
     app.client = client
 
-    #connecting to server
-    client.dial_server()
+    # Get Command line arguments
+    argparse = argparse.ArgumentParser(description="SecureChat Application Client")
+    argparse.add_argument("-p", "--port", dest="port", help="Port number to listen on. Default is 9876")
+    argparse.add_argument("-i", "--ip", dest="ip", help="Ip address to bind to. Default is localhost")
+    options = argparse.parse_args()
+
+    #set options in client object
+    if options.port: 
+        app.client.server_port = int(options.port)
+    if options.ip:
+        app.client.server_address = options.ip 
+
+    #try connecting to server
+    try:
+        client.dial_server()
+    except Exception as e:
+        print(e)
+        sys.exit(-1)
 
     #listen for updates from server through client object in another thread
     thread = threading.Thread(target=app.listen_for_updates,args=(client,), daemon=True)

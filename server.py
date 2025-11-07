@@ -3,6 +3,9 @@ import select
 import json
 import struct
 import sqlite3 
+import os
+import argparse
+
 import bcrypt
 from base64 import b64encode,b64decode
 from Crypto.PublicKey import RSA
@@ -26,6 +29,8 @@ class Server():
         self.server_sock = None 
         self.listening_address = "localhost"
         
+        #Get connection
+        self.db_con = DB()
         # Active clients list
         self.active_clients: list[Active_Client] = []
         # Buffer to handle partial message reads from clients
@@ -96,6 +101,7 @@ class Server():
             print(f"Got error starting server: {e}")
         finally:
             self.server_sock.close()
+            self.db_con.close()
 
     def import_rsa_keys(self, private_key_path, public_key_path):
         """Loads RSA keys from PEM files."""
@@ -165,7 +171,7 @@ class Server():
 
     def authenticate_user(self, client_conn: socket.socket, command, data):
         """Handles secure client login or signup."""
-        db = DB()
+        db = self.db_con
         message = {
             "command": "auth_denied"
         }
@@ -214,7 +220,6 @@ class Server():
             self.send_to_client(client_conn, message)
             self.add_active_client(Active_Client(uname, pubkey, client_conn))
 
-        db.close()
 
     def exchange_session_key(self, data: dict):
         """Forwards symmetric session key between peers."""
@@ -317,6 +322,13 @@ class Active_Client():
 class DB():
     def __init__(self):
         self.dbname = "securechat.db"
+        db_path_exists = os.path.exists(self.dbname)
+        self.conn = sqlite3.connect(self.dbname)
+        self.cursor = self.conn.cursor()
+
+        if not db_path_exists:
+            self.create_database()
+
         self.conn = sqlite3.connect(self.dbname)
         self.cursor = self.conn.cursor()
 
@@ -366,6 +378,17 @@ class DB():
         self.cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", (username,))
         result = self.cursor.fetchone()[0]
         return bool(result)
+    
+    def create_database(self):
+        print("Creating Database...")
+        query = """CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );"""
+
+        self.cursor.execute(query)
 
     def close(self):
         """Closes the database connection."""
@@ -375,5 +398,17 @@ class DB():
 # Program Entry Point
 # ===============================
 if __name__ == "__main__":
+    argparse = argparse.ArgumentParser(description="SecureChat Application Server")
+    argparse.add_argument("-p", "--port", dest="port", help="Port number to listen on. Default is 9876")
+    argparse.add_argument("-i", "--ip", dest="ip", help="Ip address to bind to. Default is localhost")
+    options = argparse.parse_args()
+
     server = Server()
+    if options.port: 
+        server.listeningPort = int(options.port)
+    if options.ip:
+        server.listening_address = options.ip 
+
     server.start_server()
+
+

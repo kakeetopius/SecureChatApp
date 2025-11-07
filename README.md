@@ -68,10 +68,8 @@ ___
   Memory:  Minimum 512 MB RAM  
 
 Required Python Packages
-```bash
-pip install pycryptodome bcrypt
-```
-
+- pycryptodome
+- bcrypt
 
 ### 4.2 Installation Steps
 #### 1. Repository Setup
@@ -103,13 +101,33 @@ ___
 
 Starting the Server
 ```bash
-  python server.py
+#create a virtual environmnt
+python -m venv env
+
+#install required packages
+env/bin/pip install bcrypt pycryptodome
+
+#activate the virtual environment
+source env/bin/activate
+
+#start the server to listen on a particular
+python server.py -p 9000
+#default port (if not given) is 9876
+
+#get help
+python server.py -h
 ```
 
 ### 5.2 Client Operation
 Starting Client Application
 ```bash
-  python gui.py
+#In a new terminal activate virtual environmnt also
+source env/bin/activate
+#start client and provide port server is listening to. Default is 9876
+python gui.py -p 9876
+
+#get help
+python gui.py -h
 ```
   
 --- 

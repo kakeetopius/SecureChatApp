@@ -80,17 +80,8 @@ class Client():
             self.client_socket.setblocking(False)  # Non-blocking for polling
 
             print("Connected to server")
-
-        except socket.timeout:
-            print("Connection to server timed out")
-        except socket.gaierror:
-            print("DNS related error")
-        except ConnectionRefusedError:
-            print("Connection Refused by server")
-        except OSError as e:
-            print(f"Got error: {e}")
         except Exception as e:
-            print(f"Got error: {e}")
+            raise ConnectionError(f"Failed to Connect to Server on {self.server_address}:{self.server_port} - {e}")
 
     def poll_server(self):
         """
