@@ -124,7 +124,7 @@ Starting Client Application
 #In a new terminal activate virtual environmnt also
 source env/bin/activate
 #start client and provide port server is listening to. Default is 9876
-python gui.py -p 9876
+python gui.py -p 9000
 
 #get help
 python gui.py -h
