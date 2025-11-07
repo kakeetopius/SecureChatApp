@@ -1,3 +1,4 @@
 securechat.db
 server_privkey.pem
 server_pubkey.pem
+__pycache__/
