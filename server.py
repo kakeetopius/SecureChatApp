@@ -1,13 +1,14 @@
+from pprint import pprint
 import socket
 import select
 import json
 import struct
-import sqlite3 
+import sqlite3
 import os
 import argparse
 
 import bcrypt
-from base64 import b64encode,b64decode
+from base64 import b64encode, b64decode
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
@@ -22,14 +23,15 @@ from Crypto.Cipher import PKCS1_OAEP
 # - Real-time client connection management
 # ===============================
 
-class Server():
+
+class Server:
     def __init__(self):
         # Server configuration
         self.listeningPort: int = 9876
-        self.server_sock = None 
+        self.server_sock: socket.socket
         self.listening_address = "localhost"
-        
-        #Get connection
+
+        # Get connection
         self.db_con = DB()
         # Active clients list
         self.active_clients: list[Active_Client] = []
@@ -37,7 +39,9 @@ class Server():
         self.client_buffers = {}
 
         # Import server RSA keys
-        self.private_key, self.public_key = self.import_rsa_keys("server_privkey.pem", "server_pubkey.pem")
+        self.private_key, self.public_key = self.import_rsa_keys(
+            "server_privkey.pem", "server_pubkey.pem"
+        )
 
         # Confirm key loading
         if self.private_key is None:
@@ -57,12 +61,14 @@ class Server():
 
             sockets2poll = [self.server_sock]
 
-            print(f"Server Listening on address {self.listening_address} port {self.listeningPort}")
+            print(
+                f"Server Listening on address {self.listening_address} port {self.listeningPort}"
+            )
 
             # Main event loop
             while True:
                 # Monitor sockets ready for reading
-                readable_socks,_,_ = select.select(sockets2poll, [], [])
+                readable_socks, _, _ = select.select(sockets2poll, [], [])
                 for sock in readable_socks:
                     # If the listening socket, accept new client
                     if sock is self.server_sock:
@@ -86,7 +92,7 @@ class Server():
                                 continue
 
                             # Append received chunk to buffer
-                            self.client_buffers[sock] += data 
+                            self.client_buffers[sock] += data
                             self.process_client_data(sock)
                         except ConnectionResetError:
                             print("Client forcibly closed connection")
@@ -137,9 +143,9 @@ class Server():
                 break
 
             # Extract full message payload
-            msg_data = buff[4: 4+msg_len]
+            msg_data = buff[4 : 4 + msg_len]
             # Remove processed portion from buffer
-            buff = buff[4+msg_len:]
+            buff = buff[4 + msg_len :]
 
             # Handle decoded message
             self.handle_client_message(sock, msg_data)
@@ -151,7 +157,9 @@ class Server():
         """Decodes and routes client JSON messages."""
         try:
             msg = json.loads(msg_data.decode("utf-8"))
-            print(f"Got message from client {msg}")
+            print(f"Got message from client")
+            print(json.dumps(msg, indent=4))
+            print("\n\n")
             command = msg["command"]
 
             # Match client command
@@ -172,10 +180,8 @@ class Server():
     def authenticate_user(self, client_conn: socket.socket, command, data):
         """Handles secure client login or signup."""
         db = self.db_con
-        message = {
-            "command": "auth_denied"
-        }
-        
+        message = {"command": "auth_denied"}
+
         pubkey = data["public_key"]
         uname = data["username"]
         passwd = data["password"]
@@ -194,12 +200,12 @@ class Server():
         for client in self.active_clients:
             client_details = {
                 "username": client.get_name(),
-                "public_key": client.get_publickey()
+                "public_key": client.get_publickey(),
             }
             active_users.append(client_details)
 
         # Authenticate or register
-        status = False
+        status: bool
         if command == "login":
             status = db.authenticate_user(uname, passwd)
         elif command == "signup":
@@ -213,13 +219,9 @@ class Server():
 
         # On success, send active peer list
         if status == True:
-            message = {
-                "command": "auth_granted",
-                "peers": active_users
-            }
+            message = {"command": "auth_granted", "peers": active_users}
             self.send_to_client(client_conn, message)
             self.add_active_client(Active_Client(uname, pubkey, client_conn))
-
 
     def exchange_session_key(self, data: dict):
         """Forwards symmetric session key between peers."""
@@ -231,7 +233,7 @@ class Server():
                 message = {
                     "command": "recv_session_key",
                     "peername": sender,
-                    "session_key": data["session_key"]
+                    "session_key": data["session_key"],
                 }
                 self.send_to_client(client.connection, message)
                 break
@@ -248,7 +250,7 @@ class Server():
                     "peername": sender,
                     "message": data["message"],
                     "iv": data["iv"],
-                    "mac": data["mac"]
+                    "mac": data["mac"],
                 }
                 self.send_to_client(client.connection, message)
                 break
@@ -275,15 +277,15 @@ class Server():
         # Notify all active clients
         for client in self.active_clients:
             self.send_to_client(client.connection, message)
-        
-    def add_active_client(self, client: 'Active_Client'):
+
+    def add_active_client(self, client: "Active_Client"):
         """Adds new authenticated clients and broadcasts their presence."""
         self.active_clients.append(client)
 
         message = {
             "command": "new_peer",
             "peername": client.name,
-            "public_key": client.public_key
+            "public_key": client.public_key,
         }
 
         for client in self.active_clients:
@@ -291,19 +293,18 @@ class Server():
 
     def send_to_client(self, client_conn: socket.socket, data: dict):
         """Encodes JSON data and sends length-prefixed packet to client."""
-        data = json.dumps(data).encode("utf-8")
-        data_len = struct.pack(">I", len(data))
-        client_conn.sendall(data_len + data)
+        json_data = json.dumps(data).encode("utf-8")
+        data_len = struct.pack(">I", len(json_data))
+        client_conn.sendall(data_len + json_data)
 
-# ===============================
+
 # Active Client Representation
-# ===============================
-class Active_Client():
+class Active_Client:
     def __init__(self, name, public_key, conn):
         self.name = name
         self.public_key = public_key
         self.connection = conn
-    
+
     def set_name(self, name):
         self.name = name
 
@@ -312,14 +313,13 @@ class Active_Client():
 
     def get_name(self):
         return self.name
-    
+
     def get_publickey(self):
         return self.public_key
 
-# ===============================
+
 # Database Management for Users
-# ===============================
-class DB():
+class DB:
     def __init__(self):
         self.dbname = "securechat.db"
         db_path_exists = os.path.exists(self.dbname)
@@ -352,13 +352,13 @@ class DB():
         """Verifies login credentials."""
         if not self.user_exists(username):
             print(f"User {username} does not exist")
-            return False 
+            return False
 
         hashed_pass = self.get_table_field("password_hash", username)
         password = password.encode("utf-8")
         return bcrypt.checkpw(password, hashed_pass)
-        
-    def get_table_field(self, field_name, username) -> str:
+
+    def get_table_field(self, field_name, username):
         """Retrieves specific user fields from DB."""
         allowed_fields = ["username", "password_hash", "public_key"]
         if field_name not in allowed_fields:
@@ -369,16 +369,18 @@ class DB():
         self.cursor.execute(query, (username,))
         row = self.cursor.fetchone()
 
-        if (row is None):
+        if row is None:
             return None
         return row[0]
 
     def user_exists(self, username) -> bool:
         """Checks if a username already exists."""
-        self.cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", (username,))
+        self.cursor.execute(
+            "SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", (username,)
+        )
         result = self.cursor.fetchone()[0]
         return bool(result)
-    
+
     def create_database(self):
         print("Creating Database...")
         query = """CREATE TABLE IF NOT EXISTS users (
@@ -394,21 +396,22 @@ class DB():
         """Closes the database connection."""
         self.conn.close()
 
-# ===============================
+
 # Program Entry Point
-# ===============================
 if __name__ == "__main__":
-    argparse = argparse.ArgumentParser(description="SecureChat Application Server")
-    argparse.add_argument("-p", "--port", dest="port", help="Port number to listen on. Default is 9876")
-    argparse.add_argument("-i", "--ip", dest="ip", help="Ip address to bind to. Default is localhost")
-    options = argparse.parse_args()
+    argparser = argparse.ArgumentParser(description="SecureChat Application Server")
+    argparser.add_argument(
+        "-p", "--port", dest="port", help="Port number to listen on. Default is 9876"
+    )
+    argparser.add_argument(
+        "-i", "--ip", dest="ip", help="Ip address to bind to. Default is localhost"
+    )
+    options = argparser.parse_args()
 
     server = Server()
-    if options.port: 
+    if options.port:
         server.listeningPort = int(options.port)
     if options.ip:
-        server.listening_address = options.ip 
+        server.listening_address = options.ip
 
     server.start_server()
-
-
