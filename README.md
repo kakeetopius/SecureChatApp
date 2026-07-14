@@ -77,7 +77,7 @@ The Secure Chat Application is a real-time messaging platform that implements en
 #### Requirements
 
 Python Version: 3.7 or higher  
-uv python package manager
+uv python package manager  
 Operating System: Windows, macOS, or Linux
 
 ### 4.2 Installation Steps
@@ -102,7 +102,7 @@ OR:
 ##### Generate server private key (2048-bit RSA)
 
 ```bash
-  openssl genrsa -out server_privkey.pem 2048
+openssl genrsa -out server_privkey.pem 2048
 ```
 
 ##### Extract server public key
