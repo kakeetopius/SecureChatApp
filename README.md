@@ -66,7 +66,7 @@ The Secure Chat Application is a real-time messaging platform that implements en
 - Send updates from listening thread to a queue.
 - Main thread processes queue and updates gui
 
-![Client Architecture](resources/client_arch.png)
+[Client Architecture](resources/client_arch.png)
 
 ---
 
